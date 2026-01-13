@@ -1,11 +1,20 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;900&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: 'Poppins', sans-serif;
-  margin: 0;
-  padding: 0;
+/* Animasi Perpindahan Halaman */
+.page-enter-active,
+.page-leave-active {
+  transition: all 0.3s ease-in-out;
+}
+.page-enter-from,
+.page-leave-to {
+  opacity: 0;
+  filter: blur(10px);
+  transform: translateY(5px);
+}
+
+/* Smooth Scrolling */
+html {
+  scroll-behavior: smooth;
 }

@@ -1,12 +1,31 @@
 export default defineNuxtConfig({
-  // Memberitahu Nuxt folder utama ada di 'app'
   srcDir: 'app/',
-  
-  // Daftarkan file CSS global kamu di sini
+
   css: ['~/assets/css/main.css'],
 
-  // Daftarkan modul tailwind
-  modules: ['@nuxtjs/tailwindcss'],
+  modules: [
+    '@nuxtjs/tailwindcss',
+    '@pinia/nuxt'
+  ],
+
+  runtimeConfig: {
+    public: {
+      midtransClientKey: ''
+    }
+  },
+
+  app: {
+    pageTransition: { name: 'page', mode: 'out-in' },
+    head: {
+      title: 'nuxt dalit',
+      script: [
+        {
+          src: 'https://app.sandbox.midtrans.com/snap/snap.js',
+          defer: true
+        }
+      ]
+    }
+  },
 
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true }

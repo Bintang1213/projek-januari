@@ -16,32 +16,37 @@ func Register(c *fiber.Ctx) error {
 		return c.Status(400).JSON(fiber.Map{"message": "Data tidak valid"})
 	}
 
-	// Enkripsi password
-	password, _ := bcrypt.GenerateFromPassword([]byte(data["password"]), 14)
+	// Enkripsi password dengan penanganan error
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(data["password"]), 14)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"message": "Gagal memproses password"})
+	}
 
 	user := models.User{
 		Name:     data["name"],
 		Email:    data["email"],
-		Password: string(password),
+		Password: string(hashedPassword),
 		Role:     data["role"], 
 	}
 
 	if err := config.DB.Create(&user).Error; err != nil {
-		return c.Status(500).JSON(fiber.Map{"message": "Gagal membuat user/Email sudah ada"})
+		return c.Status(500).JSON(fiber.Map{"message": "Email sudah terdaftar!"})
 	}
 
-	return c.JSON(fiber.Map{"message": "Berhasil daftar!", "user": user})
+	return c.JSON(fiber.Map{"message": "Berhasil daftar!"})
 }
 
 func Login(c *fiber.Ctx) error {
 	var data map[string]string
-	c.BodyParser(&data)
+	if err := c.BodyParser(&data); err != nil {
+		return c.Status(400).JSON(fiber.Map{"message": "Data tidak valid"})
+	}
 
 	var user models.User
-	config.DB.Where("email = ?", data["email"]).First(&user)
+	err := config.DB.Where("email = ?", data["email"]).First(&user).Error
 
-	if user.ID == 0 || bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(data["password"])) != nil {
-		return c.Status(401).JSON(fiber.Map{"message": "Email atau Password salah"})
+	if err != nil || bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(data["password"])) != nil {
+		return c.Status(401).JSON(fiber.Map{"message": "Email atau Password salah!"})
 	}
 
 	claims := jwt.MapClaims{
@@ -49,6 +54,7 @@ func Login(c *fiber.Ctx) error {
 		"role":    user.Role,
 		"exp":     time.Now().Add(time.Hour * 24).Unix(),
 	}
+
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	t, _ := token.SignedString([]byte("SECRET_KEY_KAMU")) 
 

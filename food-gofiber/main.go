@@ -10,17 +10,25 @@ import (
 )
 
 func main() {
-	//  Koneksi Database
+	// Koneksi Database
 	config.ConnectDB()
 
-	err := config.DB.AutoMigrate(&models.User{}, &models.Menu{})
+	
+	err := config.DB.AutoMigrate(
+		&models.User{}, 
+		&models.Menu{}, 
+		&models.Order{}, 
+		&models.OrderItem{},
+		&models.Cart{},
+	)
+	
 	if err != nil {
 		panic("Gagal melakukan migrasi database: " + err.Error())
 	}
 
 	app := fiber.New()
 
-	//  Middleware
+	// Middleware
 	app.Use(logger.New()) 
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: "http://localhost:3000", 
